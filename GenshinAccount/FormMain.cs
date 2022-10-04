@@ -199,11 +199,11 @@ namespace GenshinAccount
             }
             else
             {
-                if (YuanShenIsRunning())
-                {
-                    MessageBox.Show("原神正在运行，请先关闭原神进程后再试！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
+//                 if (YuanShenIsRunning())
+//                 {
+//                     MessageBox.Show("原神正在运行，请先关闭原神进程后再试！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+//                     return;
+//                 }
                 try
                 {
                     if (!chkInjectDll.Checked)
