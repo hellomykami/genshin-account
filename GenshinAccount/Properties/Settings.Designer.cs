@@ -106,5 +106,17 @@ namespace GenshinAccount.Properties {
                 this["InjectDllEnable"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool MuiltOpen {
+            get {
+                return ((bool)(this["MuiltOpen"]));
+            }
+            set {
+                this["MuiltOpen"] = value;
+            }
+        }
     }
 }

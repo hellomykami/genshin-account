@@ -44,6 +44,7 @@ namespace GenshinAccount
             txtStartParam.Text = Properties.Settings.Default.YSStartParam;
             txtDllPath.Text = Properties.Settings.Default.InjectDllPath;
             chkInjectDll.Checked = Properties.Settings.Default.InjectDllEnable;
+            chkCheckGame.Checked = Properties.Settings.Default.MuiltOpen;
             notifyIcon.Visible = chkMinimizeToNotifyArea.Checked = Properties.Settings.Default.MinimizeToNotifyAreaEnabled;
 
 
@@ -199,11 +200,6 @@ namespace GenshinAccount
             }
             else
             {
-                if (YuanShenIsRunning() && !chkCheckGame.Checked)
-                {
-                    MessageBox.Show("原神正在运行，请先关闭原神进程后再试！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
                 try
                 {
                     if (!chkInjectDll.Checked)
@@ -396,6 +392,7 @@ namespace GenshinAccount
             Properties.Settings.Default.InjectDllPath = txtDllPath.Text;
             Properties.Settings.Default.InjectDllEnable = chkInjectDll.Checked;
             Properties.Settings.Default.MinimizeToNotifyAreaEnabled = chkMinimizeToNotifyArea.Checked;
+            Properties.Settings.Default.MuiltOpen = chkCheckGame.Checked;
             Properties.Settings.Default.Save();
         }
 
@@ -480,6 +477,14 @@ namespace GenshinAccount
 
         private void btnStartGame_Click(object sender, EventArgs e)
         {
+            if (chkAutoStartYS.Checked && !chkCheckGame.Checked)
+            {
+                var pros = Process.GetProcessesByName("YuanShen");
+                if (pros.Any())
+                {
+                    pros[0].Kill();
+                }
+            }
             StartGame();
         }
     }
