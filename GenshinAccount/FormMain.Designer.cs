@@ -36,7 +36,6 @@
             this.btnSwitch = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.btnDelete = new System.Windows.Forms.Button();
-            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.chkAutoStartYS = new System.Windows.Forms.CheckBox();
             this.chkSkipTips = new System.Windows.Forms.CheckBox();
             this.txtPath = new System.Windows.Forms.TextBox();
@@ -53,6 +52,12 @@
             this.picHelpSatrtParam = new System.Windows.Forms.PictureBox();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tipHelp = new System.Windows.Forms.ToolTip(this.components);
+            this.btnDllPath = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.txtDllPath = new System.Windows.Forms.TextBox();
+            this.chkInjectDll = new System.Windows.Forms.CheckBox();
+            this.btnStartGame = new System.Windows.Forms.Button();
+            this.chkCheckGame = new System.Windows.Forms.CheckBox();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.picHelpSatrtParam)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
@@ -100,13 +105,6 @@
             this.btnDelete.Name = "btnDelete";
             this.btnDelete.UseVisualStyleBackColor = true;
             this.btnDelete.Click += new System.EventHandler(this.btnDelete_Click);
-            // 
-            // linkLabel1
-            // 
-            resources.ApplyResources(this.linkLabel1, "linkLabel1");
-            this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.TabStop = true;
-            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
             // chkAutoStartYS
             // 
@@ -204,10 +202,56 @@
             this.pictureBox1.TabStop = false;
             this.tipHelp.SetToolTip(this.pictureBox1, resources.GetString("pictureBox1.ToolTip"));
             // 
+            // btnDllPath
+            // 
+            resources.ApplyResources(this.btnDllPath, "btnDllPath");
+            this.btnDllPath.Name = "btnDllPath";
+            this.btnDllPath.UseVisualStyleBackColor = true;
+            this.btnDllPath.Click += new System.EventHandler(this.btnDllPath_Click);
+            // 
+            // label3
+            // 
+            resources.ApplyResources(this.label3, "label3");
+            this.label3.Name = "label3";
+            // 
+            // txtDllPath
+            // 
+            resources.ApplyResources(this.txtDllPath, "txtDllPath");
+            this.txtDllPath.Name = "txtDllPath";
+            // 
+            // chkInjectDll
+            // 
+            resources.ApplyResources(this.chkInjectDll, "chkInjectDll");
+            this.chkInjectDll.Checked = true;
+            this.chkInjectDll.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkInjectDll.Name = "chkInjectDll";
+            this.chkInjectDll.UseVisualStyleBackColor = true;
+            // 
+            // btnStartGame
+            // 
+            resources.ApplyResources(this.btnStartGame, "btnStartGame");
+            this.btnStartGame.Name = "btnStartGame";
+            this.btnStartGame.UseVisualStyleBackColor = true;
+            this.btnStartGame.Click += new System.EventHandler(this.btnStartGame_Click);
+            // 
+            // chkCheckGame
+            // 
+            resources.ApplyResources(this.chkCheckGame, "chkCheckGame");
+            this.chkCheckGame.Checked = true;
+            this.chkCheckGame.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkCheckGame.Name = "chkCheckGame";
+            this.chkCheckGame.UseVisualStyleBackColor = true;
+            // 
             // FormMain
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.chkCheckGame);
+            this.Controls.Add(this.btnStartGame);
+            this.Controls.Add(this.chkInjectDll);
+            this.Controls.Add(this.txtDllPath);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.btnDllPath);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.picHelpSatrtParam);
             this.Controls.Add(this.label2);
@@ -218,7 +262,6 @@
             this.Controls.Add(this.btnChoosePath);
             this.Controls.Add(this.chkSkipTips);
             this.Controls.Add(this.chkAutoStartYS);
-            this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnSwitch);
@@ -244,7 +287,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ColumnHeader name;
         private System.Windows.Forms.Button btnDelete;
-        private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.CheckBox chkAutoStartYS;
         private System.Windows.Forms.CheckBox chkSkipTips;
         private System.Windows.Forms.TextBox txtPath;
@@ -261,6 +303,12 @@
         private System.Windows.Forms.ToolStripMenuItem 退出ToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolTip tipHelp;
+        private System.Windows.Forms.Button btnDllPath;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.TextBox txtDllPath;
+        private System.Windows.Forms.CheckBox chkInjectDll;
+        private System.Windows.Forms.Button btnStartGame;
+        private System.Windows.Forms.CheckBox chkCheckGame;
     }
 }
 

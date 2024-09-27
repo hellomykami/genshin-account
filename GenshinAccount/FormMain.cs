@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -41,6 +42,9 @@ namespace GenshinAccount
             chkAutoStartYS.Checked = Properties.Settings.Default.AutoRestartYSEnabled;
             chkSkipTips.Checked = Properties.Settings.Default.SkipTipsEnabled;
             txtStartParam.Text = Properties.Settings.Default.YSStartParam;
+            txtDllPath.Text = Properties.Settings.Default.InjectDllPath;
+            chkInjectDll.Checked = Properties.Settings.Default.InjectDllEnable;
+            chkCheckGame.Checked = Properties.Settings.Default.MuiltOpen;
             notifyIcon.Visible = chkMinimizeToNotifyArea.Checked = Properties.Settings.Default.MinimizeToNotifyAreaEnabled;
 
 
@@ -133,6 +137,134 @@ namespace GenshinAccount
             Switch(name, chkAutoStartYS.Checked);
         }
 
+        private bool InjectDll(IntPtr hProc)
+        {
+            IntPtr hKernel = DllUtils.GetModuleHandle("kernel32.dll");
+            if (hKernel == IntPtr.Zero)
+            {
+                MessageBox.Show("kernel32.dll模块地址寻找失败");
+                return false;
+            }
+            IntPtr pLoadLibrary = DllUtils.GetProcAddress(hKernel, "LoadLibraryA");
+            if (pLoadLibrary == IntPtr.Zero)
+            {
+                MessageBox.Show("LoadLibraryA地址获取失败");
+                return false;
+            }
+            IntPtr pDllPath = DllUtils.VirtualAllocEx(hProc, IntPtr.Zero,
+                (uint)((txtDllPath.Text.Length + 1) * Marshal.SizeOf(typeof(char))), 0x1000 | 0x2000, 0x4);
+            if (pDllPath == IntPtr.Zero)
+            {
+                MessageBox.Show(String.Format("申请内存地址失败 : {0}", Marshal.GetLastWin32Error()));
+                return false;
+            }
+            bool writeResult = DllUtils.WriteProcessMemory(hProc, pDllPath,
+                Encoding.Default.GetBytes(txtDllPath.Text), (uint)((txtDllPath.Text.Length + 1) * Marshal.SizeOf(typeof(char))), out _);
+            if (!writeResult)
+            {
+                MessageBox.Show(String.Format("写进程内存失败 : {0}", DllUtils.GetLastError()));
+                return false;
+            }
+            IntPtr hThread = DllUtils.CreateRemoteThread(hProc, IntPtr.Zero, 0, pLoadLibrary, pDllPath, 0, IntPtr.Zero);
+            if (hThread == IntPtr.Zero)
+            {
+                MessageBox.Show(String.Format("创建远程线程失败 : {0}", Marshal.GetLastWin32Error()));
+                DllUtils.VirtualFreeEx(hProc, pDllPath, 0, 0x8000);
+                return false;
+            }
+            if (DllUtils.WaitForSingleObject(hThread, 2000) == IntPtr.Zero)
+            {
+                DllUtils.VirtualFreeEx(hProc, pDllPath, 0, 0x8000);
+            }
+            DllUtils.CloseHandle(hThread);
+            return true;
+        }
+
+        private void StartGameNomal()
+        {
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.UseShellExecute = true;
+            startInfo.WorkingDirectory = Environment.CurrentDirectory;
+            startInfo.FileName = Path.Combine(txtPath.Text, "Genshin Impact Game", "YuanShen.exe");
+            startInfo.Verb = "runas";
+            startInfo.Arguments = txtStartParam.Text;
+            Process.Start(startInfo);
+        }
+
+        private void StartGame()
+        {
+            if (string.IsNullOrEmpty(txtPath.Text))
+            {
+                MessageBox.Show("游戏路径为空", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                chkAutoStartYS.CheckState = CheckState.Unchecked;
+            }
+            else
+            {
+                try
+                {
+                    if (!chkInjectDll.Checked)
+                    {
+                        StartGameNomal();
+                        return;
+                    }
+                    if (string.IsNullOrEmpty(txtDllPath.Text))
+                    {
+                        MessageBox.Show("Dll路径为空,正常启动游戏", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        chkInjectDll.CheckState = CheckState.Unchecked;
+                        StartGameNomal();
+                        return;
+                    }
+                    bool TokenRet = DllUtils.OpenProcessToken(DllUtils.GetCurrentProcess(), 0xF00FF, out IntPtr hToken);
+                    var si = new DllUtils.STARTUPINFOEX();
+                    si.StartupInfo.cb = Marshal.SizeOf(si);
+                    if (hToken == IntPtr.Zero)
+                    {
+                        MessageBox.Show("提权失败,正常启动游戏"); 
+                        StartGameNomal();
+                        return;
+                    }
+                    var pExporer = Process.GetProcessesByName("explorer")[0];
+                    if (pExporer == null)
+                    {
+                        MessageBox.Show("explorer进程未找到,正常启动游戏");
+                        StartGameNomal();
+                        return;
+                    }
+                    IntPtr handle = DllUtils.OpenProcess(0xF0000 | 0x100000 | 0xFFFF, false, (uint)pExporer.Id);
+                    var lpSize = IntPtr.Zero;
+                    DllUtils.InitializeProcThreadAttributeList(IntPtr.Zero, 1, 0, ref lpSize);
+                    si.lpAttributeList = Marshal.AllocHGlobal(lpSize);
+                    DllUtils.InitializeProcThreadAttributeList(si.lpAttributeList, 1, 0, ref lpSize);
+                    if (DllUtils.UpdateProcThreadAttribute(si.lpAttributeList, 0, (IntPtr)0x00020004, handle, (IntPtr)IntPtr.Size, IntPtr.Zero, IntPtr.Zero))
+                    {
+                        MessageBox.Show("更新进程的线程属性失败.");
+                    }
+                    var pi = new DllUtils.PROCESS_INFORMATION();
+                    var result = DllUtils.CreateProcessAsUser(hToken, Path.Combine(txtPath.Text, "Genshin Impact Game", "YuanShen.exe").ToString(),
+                        txtStartParam.Text, IntPtr.Zero, IntPtr.Zero, false, 0x00080000 | 0x00000004,
+                        IntPtr.Zero, Path.Combine(txtPath.Text, "Genshin Impact Game").ToString(), ref si.StartupInfo, out pi);
+                    if (!result)
+                    {
+                        MessageBox.Show("暂停进程启动失败,正常启动");
+                        StartGameNomal();
+                        return;
+                    }
+                    DllUtils.DeleteProcThreadAttributeList(si.lpAttributeList);
+                    new System.Threading.Thread(() =>
+                    {
+                        InjectDll(pi.hProcess);
+                        System.Threading.Thread.Sleep(2000);
+                        DllUtils.ResumeThread(pi.hThread);
+                        DllUtils.CloseHandle(pi.hProcess);
+                    }).Start();
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
         private void Switch(string name, bool autoRestart)
         {
             if (string.IsNullOrEmpty(name))
@@ -142,7 +274,7 @@ namespace GenshinAccount
             }
             if (!autoRestart)
             {
-                if (YuanShenIsRunning())
+                if (YuanShenIsRunning() && !chkCheckGame.Checked)
                 {
                     MessageBox.Show("原神正在运行，请先关闭原神进程后再切换账号！", "提示", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return;
@@ -151,7 +283,7 @@ namespace GenshinAccount
 
             if (chkSkipTips.Checked || MessageBox.Show($"是否要切换为[{name}]", "提示", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
             {
-                if (autoRestart)
+                if (autoRestart && !chkCheckGame.Checked)
                 {
                     var pros = Process.GetProcessesByName("YuanShen");
                     if (pros.Any())
@@ -164,28 +296,7 @@ namespace GenshinAccount
 
                 if (autoRestart)
                 {
-                    if (string.IsNullOrEmpty(txtPath.Text))
-                    {
-                        MessageBox.Show("请选择原神安装路径后，才能使用自动重启功能", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        chkAutoStartYS.Checked = false;
-                    }
-                    else
-                    {
-                        try
-                        {
-                            ProcessStartInfo startInfo = new ProcessStartInfo();
-                            startInfo.UseShellExecute = true;
-                            startInfo.WorkingDirectory = Environment.CurrentDirectory;
-                            startInfo.FileName = Path.Combine(txtPath.Text, "Genshin Impact Game", "YuanShen.exe");
-                            startInfo.Verb = "runas";
-                            startInfo.Arguments = txtStartParam.Text;
-                            Process.Start(startInfo);
-                        }
-                        catch
-                        {
-
-                        }
-                    }
+                    StartGame();
                 }
 
                 if (!chkSkipTips.Checked)
@@ -278,7 +389,10 @@ namespace GenshinAccount
             Properties.Settings.Default.SkipTipsEnabled = chkSkipTips.Checked;
             Properties.Settings.Default.YSInstallPath = txtPath.Text;
             Properties.Settings.Default.YSStartParam = txtStartParam.Text;
+            Properties.Settings.Default.InjectDllPath = txtDllPath.Text;
+            Properties.Settings.Default.InjectDllEnable = chkInjectDll.Checked;
             Properties.Settings.Default.MinimizeToNotifyAreaEnabled = chkMinimizeToNotifyArea.Checked;
+            Properties.Settings.Default.MuiltOpen = chkCheckGame.Checked;
             Properties.Settings.Default.Save();
         }
 
@@ -308,6 +422,7 @@ namespace GenshinAccount
             if (WindowState == FormWindowState.Minimized && notifyIcon.Visible)
             {
                 this.ShowInTaskbar = false;
+                this.Hide();
             }
         }
 
@@ -319,6 +434,7 @@ namespace GenshinAccount
                 this.ShowInTaskbar = true;
                 //notifyIcon.Visible = false;
             }
+            this.Show();
             this.Activate();
         }
 
@@ -344,6 +460,32 @@ namespace GenshinAccount
         private void chkMinimizeToNotifyArea_CheckedChanged(object sender, EventArgs e)
         {
             notifyIcon.Visible = chkMinimizeToNotifyArea.Checked;
+        }
+
+        private void btnDllPath_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "应用程序扩展 (*.dll)|*.dll";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    txtDllPath.Text = openFileDialog.FileName;
+                }
+            }
+        }
+
+        private void btnStartGame_Click(object sender, EventArgs e)
+        {
+            if (chkAutoStartYS.Checked && !chkCheckGame.Checked)
+            {
+                var pros = Process.GetProcessesByName("YuanShen");
+                if (pros.Any())
+                {
+                    pros[0].Kill();
+                }
+            }
+            StartGame();
         }
     }
 }

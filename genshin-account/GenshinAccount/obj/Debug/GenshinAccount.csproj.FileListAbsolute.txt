@@ -1,0 +1,12 @@
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\bin\Debug\GenshinAccount.exe.config
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\bin\Debug\GenshinAccount.exe
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\bin\Debug\GenshinAccount.pdb
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\obj\Debug\GenshinAccount.csproj.AssemblyReference.cache
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\obj\Debug\GenshinAccount.csproj.SuggestedBindingRedirects.cache
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\obj\Debug\GenshinAccount.FormInput.resources
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\obj\Debug\GenshinAccount.FormMain.resources
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\obj\Debug\GenshinAccount.Properties.Resources.resources
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\obj\Debug\GenshinAccount.csproj.GenerateResource.cache
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\obj\Debug\GenshinAccount.csproj.CoreCompileInputs.cache
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\obj\Debug\GenshinAccount.exe
+C:\Users\USER\Source\Repos\genshin-account\GenshinAccount\obj\Debug\GenshinAccount.pdb
